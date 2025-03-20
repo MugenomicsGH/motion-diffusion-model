@@ -10,6 +10,7 @@ import mpl_toolkits.mplot3d.axes3d as p3
 from textwrap import wrap
 from moviepy.editor import VideoClip
 from moviepy.video.io.bindings import mplfig_to_npimage
+import os
 
 def list_cut_average(ll, intervals):
     if intervals == 1:
@@ -27,6 +28,10 @@ def list_cut_average(ll, intervals):
 
 def plot_3d_motion(save_path, kinematic_tree, joints, title, dataset, figsize=(3, 3), fps=120, radius=3,
                    vis_mode='default', gt_frames=[]):
+    # Skip video generation if environment variable is set
+    if os.environ.get("MDM_SKIP_VIDEO") == "1":
+        return None
+
     matplotlib.use('Agg')
 
     title_per_frame = type(title) == list

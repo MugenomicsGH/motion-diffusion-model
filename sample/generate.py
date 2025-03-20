@@ -208,6 +208,10 @@ def main(args=None):
     with open(npy_path.replace('.npy', '_len.txt'), 'w') as fw:
         fw.write('\n'.join([str(l) for l in all_lengths]))
 
+    # Skip video generation if environment variable is set
+    if os.environ.get("MDM_SKIP_VIDEO") == "1":
+        return
+
     print(f"saving visualizations to [{out_path}]...")
     skeleton = paramUtil.kit_kinematic_chain if args.dataset == 'kit' else paramUtil.t2m_kinematic_chain
 

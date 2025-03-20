@@ -140,9 +140,9 @@ class MDM(nn.Module):
     def load_and_freeze_clip(self, clip_version):
         clip_model, clip_preprocess = clip.load(clip_version, device='cpu',
                                                 jit=False)  # Must set jit=False for training
-        clip.model.convert_weights(
-            clip_model)  # Actually this line is unnecessary since clip by default already on float16
-
+        # Convert to float32 before freezing
+        clip_model.float()  # Convert all parameters to float32
+        
         # Freeze CLIP weights
         clip_model.eval()
         for p in clip_model.parameters():
@@ -175,7 +175,11 @@ class MDM(nn.Module):
             # print('texts after pad', texts.shape, texts)
         else:
             texts = clip.tokenize(raw_text, truncate=True).to(device) # [bs, context_length] # if n_tokens > 77 -> will truncate
-        return self.clip_model.encode_text(texts).float().unsqueeze(0)
+        
+        # Ensure text encoding is in float32
+        with torch.cuda.amp.autocast(enabled=False):
+            text_features = self.clip_model.encode_text(texts)
+        return text_features.float().unsqueeze(0)
     
     def bert_encode_text(self, raw_text):
         # enc_text = self.clip_model(raw_text)
